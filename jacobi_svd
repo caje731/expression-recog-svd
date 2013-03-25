@@ -1,0 +1,94 @@
+function [U,S,V]=jacobi_svd(A)  %
+% [U S V]=jacobi_svd(A)
+% A is original matrix
+% Singular values come back in S (diag matrix)
+% original matrix A= U*S*V'
+%
+% One-sided Jacobi algorithm for SVD
+% lawn15: Demmel, Veselic, 1989, 
+% Algorithm 4.1, p. 32
+% Does not currently work for single column input
+
+TOL=1.e-8;
+
+[m n]=size(A);
+U=A;
+
+V=eye(n);
+converge = TOL+1;
+
+while converge>TOL
+  converge=0;
+  for j=2:n
+    for i=1:j-1
+      % compute [alpha gamma;gamma beta]=(i,j) submatrix of U'*U
+      alpha=U(:,i);
+      alpha=alpha.^2;
+      alpha=sum(alpha);
+      
+      beta=U(:,j);
+      beta=beta.^2;
+      beta=sum(beta);
+
+      gamma=U(:,i)'*U(:,j); 
+      converge = max(converge,abs(gamma)/sqrt(alpha*beta));
+      
+      % compute Jacobi rotation that diagonalizes 
+      % [alpha gamma;gamma beta]
+      zeta=(beta-alpha)/(2*gamma);
+      t=sign(zeta)/(abs(zeta)+sqrt(1+zeta^2));
+      c=1/sqrt(1+t^2);
+      s=c*t;
+      
+      % update columns i and j of U
+      t=U(:,i);
+      U(:,i)=c*t-s*U(:,j);
+      U(:,j)=s*t+c*U(:,j);
+      
+      % update matrix V of right singular vectors
+      t=V(:,i);
+      V(:,i)=c*t-s*V(:,j);
+      V(:,j)=s*t+c*V(:,j);
+    end
+  end
+  % Prevent an infinite loop.
+  % If alpha equals beta, the next iteration will give the same values as
+  % the previous, essentially having no new effect and thereby going into
+  % an infinite loop.
+  if alpha==beta
+          break
+  end
+end
+
+% the singular values are the norms of the columns of U
+% the left singular vectors are the normalized columns of U
+for j=1:n
+  singvals(j)=norm(U(:,j));
+  U(:,j)=U(:,j)/singvals(j);
+end
+
+% Since the singular values are not in descending order, sort them, and
+% permute the rows and columns of U and V accordingly, to maintain the
+% relation of A= U*S*V'
+
+[S indices] = sort(singvals,'descend');
+S    =   diag(S);  % convert vector to a diagonal matrix
+
+TempU = eye(size(U));
+TempV = eye(size(V));
+
+for i = 1:length(indices)
+    
+    % To which position must I put current row/col
+    index = indices(i);     
+        
+    % Permute columns of U according to index
+    TempU(:,i)  = U(:,index);
+
+    % Permute rows of V' according to index
+    % (equivalent to permuting columns of V)
+    TempV(:,i)  = V(:,index);
+end
+
+U=TempU;
+V=TempV;
