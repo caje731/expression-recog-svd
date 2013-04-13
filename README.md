@@ -1,15 +1,15 @@
 expression-recog-svd
 ====================
 
-A MATLAB project that recognizes facial expressions (Happy, Sad, Angry, Surprised, Neutral)
-by applying Singular Value Decomposition to the face images.
+A MATLAB project that recognizes facial expressions (Happy, Sad, Angry, Surprised, Neutral).
 
-If you need to run the code, please make sure you have the .mat files containing required variables.
-e.g. "face_p146_small.mat"
-Please contact "r_cajetan-at-yahoo-dot-com" to get these .mat files
+It works by applying Singular Value Decomposition ("SVD perturbation") as part of the image processing.
+The basic flow goes like this:
+Input --> Histogram Equalisation --> Face Localization and Segmentation --> SVD perturbation --> Feature Vector output.
 
-Also you obviously need to have a database of face images (preferably jpg).
-Please type a file called "CFS.txt" in which each line contains the full path of these images.
-Adjust the conditions in the classification section of GUI.m to reflect the sequence and count of these images.
+A large collection of face images are given to the system as part of the Training Set.
+Feature Vectors from this Training Set are fed to a neural network for training.
 
-For queries, please contact "r_cajetan-at-yahoo-dot-com"
+A face-detection library is used to detect faces, and needs to be compiled on your machine.
+If you need to run the code, please make sure you have the .mat files containing required variables for the library.
+Contact "r_cajetan-at-yahoo-dot-com" to acquire them, or for queries.
